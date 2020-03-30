@@ -3,6 +3,7 @@ KP2faChecker is a plugin for [KeePass](http://keepass.info). It provides a colum
 
 [![Latest Release](https://img.shields.io/github/v/release/tiuub/KP2faChecker)](https://github.com/tiuub/KP2faChecker/releases/latest)
 [![GitHub All Releases](https://img.shields.io/github/downloads/tiuub/KP2faChecker/total)](https://github.com/tiuub/KP2faChecker/releases/latest)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=5F5QB7744AD5G&source=url)
 
 ## Installation
 
