@@ -7,9 +7,12 @@ KP2faChecker is a plugin for [KeePass](http://keepass.info). It provides a colum
 
 ## Installation
 
+Manual Guide:
  - Download the [latest](https://github.com/tiuub/KP2faChecker/releases/latest) release
  - Copy the KP2faChecker.plgx in the KeePass plugins directory and restart the application.
 
+Chocolatey Guide:
+- Using [chocolatey](https://chocolatey.org/) in Powershell with `choco install keepass-plugin-kp2fachecker`
 
 ## Usage
 ### First Method
@@ -62,7 +65,7 @@ If you want to request an update now, you can navigate to:
 
 ## Data privacy
 
-Your data will never be sent throught the internet. The plugin is requesting a huge json file against an server and compares the domains locally on your computer.
+The plugin is requesting a huge json file from a server and compares the domains inside this json locally on your computer. This means your private data will never be sent through the internet.
 
 
 ## License
