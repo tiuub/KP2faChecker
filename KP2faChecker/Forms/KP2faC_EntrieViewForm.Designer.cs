@@ -51,10 +51,10 @@
             this.gB_Entry.Controls.Add(this.rtb_Entry);
             this.gB_Entry.Location = new System.Drawing.Point(10, 10);
             this.gB_Entry.Name = "gB_Entry";
-            this.gB_Entry.Size = new System.Drawing.Size(304, 98);
+            this.gB_Entry.Size = new System.Drawing.Size(306, 98);
             this.gB_Entry.TabIndex = 0;
             this.gB_Entry.TabStop = false;
-            this.gB_Entry.Text = "Entry";
+            this.gB_Entry.Text = "Selected Entry";
             // 
             // rtb_Entry
             // 
@@ -64,7 +64,7 @@
             this.rtb_Entry.Name = "rtb_Entry";
             this.rtb_Entry.ReadOnly = true;
             this.rtb_Entry.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.rtb_Entry.Size = new System.Drawing.Size(291, 73);
+            this.rtb_Entry.Size = new System.Drawing.Size(293, 73);
             this.rtb_Entry.TabIndex = 1;
             this.rtb_Entry.Text = "";
             // 
@@ -76,10 +76,10 @@
             this.gB_2faOptions.Controls.Add(this.rtb_2FA);
             this.gB_2faOptions.Location = new System.Drawing.Point(10, 114);
             this.gB_2faOptions.Name = "gB_2faOptions";
-            this.gB_2faOptions.Size = new System.Drawing.Size(425, 125);
+            this.gB_2faOptions.Size = new System.Drawing.Size(427, 126);
             this.gB_2faOptions.TabIndex = 1;
             this.gB_2faOptions.TabStop = false;
-            this.gB_2faOptions.Text = "2FA Options";
+            this.gB_2faOptions.Text = "2FA Info";
             // 
             // rtb_2FA
             // 
@@ -89,8 +89,8 @@
             this.rtb_2FA.Location = new System.Drawing.Point(8, 20);
             this.rtb_2FA.Name = "rtb_2FA";
             this.rtb_2FA.ReadOnly = true;
-            this.rtb_2FA.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.rtb_2FA.Size = new System.Drawing.Size(411, 99);
+            this.rtb_2FA.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.rtb_2FA.Size = new System.Drawing.Size(413, 100);
             this.rtb_2FA.TabIndex = 0;
             this.rtb_2FA.Text = "";
             // 
@@ -108,7 +108,7 @@
             // btn_Close
             // 
             this.btn_Close.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btn_Close.Location = new System.Drawing.Point(360, 245);
+            this.btn_Close.Location = new System.Drawing.Point(362, 246);
             this.btn_Close.Name = "btn_Close";
             this.btn_Close.Size = new System.Drawing.Size(75, 23);
             this.btn_Close.TabIndex = 3;
@@ -120,7 +120,7 @@
             // 
             this.llbl_Donate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.llbl_Donate.AutoSize = true;
-            this.llbl_Donate.Location = new System.Drawing.Point(312, 250);
+            this.llbl_Donate.Location = new System.Drawing.Point(314, 251);
             this.llbl_Donate.Name = "llbl_Donate";
             this.llbl_Donate.Size = new System.Drawing.Size(42, 13);
             this.llbl_Donate.TabIndex = 4;
@@ -132,7 +132,7 @@
             // 
             this.gB_isPossible.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.gB_isPossible.Controls.Add(this.pb_trafficlight);
-            this.gB_isPossible.Location = new System.Drawing.Point(320, 10);
+            this.gB_isPossible.Location = new System.Drawing.Point(322, 10);
             this.gB_isPossible.Name = "gB_isPossible";
             this.gB_isPossible.Size = new System.Drawing.Size(115, 98);
             this.gB_isPossible.TabIndex = 5;
@@ -142,7 +142,7 @@
             // btn_Reload
             // 
             this.btn_Reload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btn_Reload.Location = new System.Drawing.Point(10, 245);
+            this.btn_Reload.Location = new System.Drawing.Point(10, 246);
             this.btn_Reload.Name = "btn_Reload";
             this.btn_Reload.Size = new System.Drawing.Size(75, 23);
             this.btn_Reload.TabIndex = 6;
@@ -154,7 +154,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(447, 280);
+            this.ClientSize = new System.Drawing.Size(449, 281);
             this.Controls.Add(this.btn_Reload);
             this.Controls.Add(this.llbl_Donate);
             this.Controls.Add(this.btn_Close);
@@ -162,6 +162,7 @@
             this.Controls.Add(this.gB_Entry);
             this.Controls.Add(this.gB_isPossible);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(465, 320);
             this.Name = "KP2faC_EntrieViewForm";
             this.Text = "KP2faChecker";
             this.Load += new System.EventHandler(this.KP2faC_EntrieViewForm_Load);

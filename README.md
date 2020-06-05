@@ -7,18 +7,21 @@ KP2faChecker is a plugin for [KeePass](http://keepass.info). It provides a colum
 
 ## Installation
 
-Manual Guide:
- - Download the [latest](https://github.com/tiuub/KP2faChecker/releases/latest) release
+ - Download the latest release [here](https://github.com/tiuub/KP2faChecker/releases/latest)
  - Copy the KP2faChecker.plgx in the KeePass plugins directory and restart the application.
 
-Chocolatey Guide:
+
+### Alternative Installation
 - Using [chocolatey](https://chocolatey.org/) in Powershell with `choco install keepass-plugin-kp2fachecker`
 
+
+
 ## Usage
+
 ### First Method
 
 At first you have to activate the column. Therefore navigate to
- - View -> Configure Columns -> (Scroll down) -> Check "Is 2fa supported?"
+ - View -> Configure Columns -> (Scroll down) -> Check "2FA Support"
 
 
 If you have activated, it should show you the column.
@@ -49,6 +52,7 @@ You can search your wanted website by name or domain. Therefore navigate to
 ![Search query](Screenshots/screenshot-4.PNG)
 
 
+
 ## Download
 
 You can download the .plgx file [here](https://github.com/tiuub/KP2faChecker/releases/latest).
@@ -59,13 +63,12 @@ You can download the .plgx file [here](https://github.com/tiuub/KP2faChecker/rel
 I have build my own API [here](https://toasted.top/kp2fac/api/v1/get/all.php), which receives its data from [twofactorauth.org](https://twofactorauth.org/). 
 To save resources and also because twofactorauth.org isnt changing its data that often, the plugin will only request every 2 days for new added websites. 
 
-If you want to request an update now, you can navigate to:
-- Tools -> KP2faChecker - Search Websites -> Reload
 
 
 ## Data privacy
 
 The plugin is requesting a huge json file from a server and compares the domains inside this json locally on your computer. This means your private data will never be sent through the internet.
+
 
 
 ## License

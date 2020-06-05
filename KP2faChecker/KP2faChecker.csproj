@@ -64,7 +64,7 @@
     </Compile>
     <Compile Include="KP2faCheckerExt.cs" />
     <Compile Include="KP2faC_Config.cs" />
-    <Compile Include="KP2faC_Fileloader.cs" />
+    <Compile Include="KP2faC_FileloaderAsync.cs" />
     <Compile Include="KP2faC_Website.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -105,4 +105,8 @@
     <Content Include="Libraries\Newtonsoft.Json.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -17,8 +17,9 @@ namespace KP2faChecker
         private ToolStripMenuItem m_MainMenuItem;
         private ToolStripMenuItem m_EntryContextCheckItem;
         public static IPluginHost m_host = null;
-        public static Dictionary<string, List<KP2faC_Website>> dictKP2faC_WebsiteByUrl = new Dictionary<string, List<KP2faC_Website>>();
+        public static Dictionary<string, object> dictKp2fac_WebsiteByDomain = new Dictionary<string, object>();
         private static KP2faC_Config m_config = null;
+        private static bool bRetrievingJson = false;
 
         public static KP2faC_Config getKP2faC_Config() { return m_config; }
 
@@ -46,7 +47,7 @@ namespace KP2faChecker
 
             m_config = new KP2faC_Config(m_host);
 
-            init();
+            init(true);
 
             return true;
         }
@@ -60,32 +61,57 @@ namespace KP2faChecker
             m_host = null;
         }
 
-        public static void init(bool refresh = false)
+        public static async void init(bool refresh = false)
         {
-            KP2faC_Fileloader fileloader = new KP2faC_Fileloader(m_config);
-            string json = fileloader.GetJson();
+            bRetrievingJson = true;
+            KP2faC_FileloaderAsync fileloader = new KP2faC_FileloaderAsync(m_config);
+            string json = await fileloader.GetJsonAsync();
+
             if (!json.Equals("KP2faC API error"))
             {
                 List<KP2faC_Website> websites = JsonConvert.DeserializeObject<List<KP2faC_Website>>(json);
                 foreach (KP2faC_Website website in websites)
                 {
-                    string domainName = prettifyUrl(website.url, prettifyMode.All);
-                    List<KP2faC_Website> value = dictKP2faC_WebsiteByUrl.ContainsKey(domainName) ? dictKP2faC_WebsiteByUrl[domainName] : new List<KP2faC_Website>();
-                    value.Add(website);
-                    dictKP2faC_WebsiteByUrl[domainName] = value;
+                    if (website.alternatives != null)
+                    {
+                        foreach (string domain in website.alternatives)
+                        {
+                            string domainName = prettifyUrl(website.url, prettifyMode.AllWithoutTld);
+
+                            string[] domainArray = domain.Split('.');
+                            domainArray = domainArray.Reverse().ToArray();
+                            var curDict = dictKp2fac_WebsiteByDomain;
+                            int i = 0;
+                            for (i = 0; i < domainArray.Length - 1; i++)
+                            {
+                                if (!curDict.Keys.Contains(domainArray[i]))
+                                {
+                                    curDict.Add(domainArray[i], new Dictionary<string, object>());
+                                }
+                                
+                                curDict = (Dictionary<string, object>)curDict[domainArray[i]];
+                            }
+                            if (!curDict.ContainsKey(domainArray[i]))
+                                curDict.Add(domainArray[i], website);
+                        }
+                    }
                 }
-                if (refresh)
-                    m_host.MainWindow.RefreshEntriesList();
             }
             else
             {
-                MessageBox.Show("KP2faChecker cannot connect to the API.", "KP2faChecker - Connection error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                await Task.Run(() =>
+                {
+                    MessageBox.Show("KP2faChecker cannot connect to the API.", "KP2faChecker - Connection error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                });
             }
+            if (refresh)
+                m_host.MainWindow.RefreshEntriesList();
+            bRetrievingJson = false;
         }
 
         public sealed class KP2faColumnProv : ColumnProvider
         {
-            private const string KP2faColumnName = "Is 2fa supported?";
+            private const string KP2faColumnName = "2FA Support";
 
             public override string[] ColumnNames
             {
@@ -103,43 +129,78 @@ namespace KP2faChecker
                 {
                     string url = pe.Strings.ReadSafe(PwDefs.UrlField);
                     if (String.IsNullOrEmpty(url))
-                        r = "No URL given!";
+                        r = "URL empty";
                     else
                     {
-                        if (dictKP2faC_WebsiteByUrl.Count > 0)
+                        if (dictKp2fac_WebsiteByDomain.Count > 0)
                         {
-                            r = "Dont know! Give a hint!";
+                            r = "Unknown";
                             string prettifiedUrl = prettifyUrl(url, prettifyMode.AllWithoutTld);
-                            if (dictKP2faC_WebsiteByUrl.ContainsKey(prettifyUrl(prettifiedUrl, prettifyMode.tld)))
-                                foreach (KP2faC_Website website in dictKP2faC_WebsiteByUrl[prettifyUrl(prettifiedUrl, prettifyMode.tld)])
-                                {
-                                    bool breakFor = false;
-                                    if (prettifiedUrl == prettifyUrl(website.url, prettifyMode.AllWithoutTld))
-                                        breakFor = true;
+                            string[] domainArray = prettifiedUrl.Split('.').Reverse().ToArray();
 
-                                    if (!breakFor)
-                                        foreach (string alternativeDomainName in website.alternatives)
+                            var curDict = dictKp2fac_WebsiteByDomain;
+                            for (int i = 0; i < domainArray.Length; i++)
+                            {
+                                if (curDict.ContainsKey(domainArray[i]))
+                                {
+                                    if (curDict[domainArray[i]] is KP2faC_Website)
+                                    {
+                                        if (((KP2faC_Website)curDict[domainArray[i]]).is2faPosssible())
                                         {
-                                            if (prettifiedUrl == prettifyUrl(alternativeDomainName, prettifyMode.AllWithoutTld))
-                                            {
-                                                breakFor = true;
-                                                break;
-                                            }
+                                            if (i == domainArray.Length - 1)
+                                                r = "Yes";
+                                            else
+                                                r = "Maybe";
+                                        }
+                                        else
+                                        {
+                                                r = "No";
                                         }
 
-                                    if (breakFor)
+                                    }
+                                    else
                                     {
-                                        if (website.is2faPosssible())
-                                            r = "Yes";
-                                        else
-                                            r = "No";
-                                        break;
+                                        curDict = (Dictionary<string, object>)curDict[domainArray[i]];
+                                        if (i == domainArray.Length - 1)
+                                        {
+                                            if (curDict.ContainsKey("*") && curDict["*"] is KP2faC_Website)
+                                            {
+                                                if (((KP2faC_Website)curDict["*"]).is2faPosssible())
+                                                {
+                                                    r = "Yes";
+                                                }
+                                                else
+                                                {
+                                                    r = "No";
+                                                }
+                                            }
+                                        }
                                     }
                                 }
+                                else if (curDict.ContainsKey("*"))
+                                {
+                                    if (curDict["*"] is KP2faC_Website)
+                                    {
+                                        if (((KP2faC_Website)curDict["*"]).is2faPosssible())
+                                        {
+                                            r = "Yes";
+                                        }
+                                        else
+                                        {
+                                            r = "No";
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        else if (bRetrievingJson)
+                        {
+                            r = "Loading";
                         }
                         else
                         {
-                            r = "API Error!";
+                            r = "API Error";
                         }
                     }
                 }
@@ -195,7 +256,7 @@ namespace KP2faChecker
         private void MainMenuItem_OnClick(object sender, EventArgs e)
         {
             Forms.KP2faC_SearchForm sf = new Forms.KP2faC_SearchForm(m_host);
-            sf.InitEx(dictKP2faC_WebsiteByUrl);
+            sf.InitExAsync();
             sf.ShowDialog();
         }
 

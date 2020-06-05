@@ -28,17 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(KP2faC_SearchForm));
             this.tb_SearchQuery = new System.Windows.Forms.TextBox();
             this.lv_Websites = new KeePass.UI.CustomListViewEx();
             this.lbl_SearchQuery = new System.Windows.Forms.Label();
             this.llbl_Donate = new System.Windows.Forms.LinkLabel();
             this.btn_Close = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lbl_Info = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btn_Search = new System.Windows.Forms.Button();
             this.btn_Reload = new System.Windows.Forms.Button();
+            this.lbl_State = new System.Windows.Forms.Label();
+            this.t_Animation = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -50,9 +54,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tb_SearchQuery.Location = new System.Drawing.Point(173, 13);
             this.tb_SearchQuery.Name = "tb_SearchQuery";
-            this.tb_SearchQuery.Size = new System.Drawing.Size(304, 20);
+            this.tb_SearchQuery.Size = new System.Drawing.Size(223, 20);
             this.tb_SearchQuery.TabIndex = 0;
-            this.tb_SearchQuery.TextChanged += new System.EventHandler(this.tb_SearchQuery_TextChanged);
+            this.tb_SearchQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tb_SearchQuery_KeyDown);
             // 
             // lv_Websites
             // 
@@ -105,14 +109,14 @@
             this.btn_Close.UseVisualStyleBackColor = true;
             this.btn_Close.Click += new System.EventHandler(this.btn_Close_Click);
             // 
-            // label2
+            // lbl_Info
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(32, 16);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(339, 26);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "Double Click the website to open the documentation or get information.\r\nHover the" +
+            this.lbl_Info.AutoSize = true;
+            this.lbl_Info.Location = new System.Drawing.Point(32, 16);
+            this.lbl_Info.Name = "lbl_Info";
+            this.lbl_Info.Size = new System.Drawing.Size(341, 26);
+            this.lbl_Info.TabIndex = 7;
+            this.lbl_Info.Text = "Double Click the website to open the documentation or get information.\r\nHover the" +
     " website to get additional information and exceptions.";
             // 
             // pictureBox1
@@ -127,7 +131,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.lbl_Info);
             this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
@@ -141,6 +145,7 @@
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.btn_Search);
             this.groupBox2.Controls.Add(this.tb_SearchQuery);
             this.groupBox2.Controls.Add(this.lv_Websites);
             this.groupBox2.Controls.Add(this.lbl_SearchQuery);
@@ -150,6 +155,16 @@
             this.groupBox2.TabIndex = 10;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = " Search";
+            // 
+            // btn_Search
+            // 
+            this.btn_Search.Location = new System.Drawing.Point(402, 11);
+            this.btn_Search.Name = "btn_Search";
+            this.btn_Search.Size = new System.Drawing.Size(75, 23);
+            this.btn_Search.TabIndex = 3;
+            this.btn_Search.Text = "Search";
+            this.btn_Search.UseVisualStyleBackColor = true;
+            this.btn_Search.Click += new System.EventHandler(this.btn_Search_Click);
             // 
             // btn_Reload
             // 
@@ -162,11 +177,26 @@
             this.btn_Reload.UseVisualStyleBackColor = true;
             this.btn_Reload.Click += new System.EventHandler(this.btn_Reload_Click);
             // 
+            // lbl_State
+            // 
+            this.lbl_State.AutoSize = true;
+            this.lbl_State.Location = new System.Drawing.Point(93, 247);
+            this.lbl_State.Name = "lbl_State";
+            this.lbl_State.Size = new System.Drawing.Size(64, 13);
+            this.lbl_State.TabIndex = 12;
+            this.lbl_State.Text = "Searching...";
+            // 
+            // t_Animation
+            // 
+            this.t_Animation.Interval = 400;
+            this.t_Animation.Tick += new System.EventHandler(this.t_Animation_Tick);
+            // 
             // KP2faC_SearchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(507, 275);
+            this.Controls.Add(this.lbl_State);
             this.Controls.Add(this.btn_Reload);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -195,10 +225,13 @@
         private System.Windows.Forms.Label lbl_SearchQuery;
         private System.Windows.Forms.LinkLabel llbl_Donate;
         private System.Windows.Forms.Button btn_Close;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lbl_Info;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Button btn_Reload;
+        private System.Windows.Forms.Label lbl_State;
+        private System.Windows.Forms.Timer t_Animation;
+        private System.Windows.Forms.Button btn_Search;
     }
 }

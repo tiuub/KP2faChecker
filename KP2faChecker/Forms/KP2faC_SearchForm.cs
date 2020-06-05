@@ -1,6 +1,7 @@
 ﻿using KeePass.Plugins;
 using KeePass.UI;
 using KeePassLib;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,6 +18,8 @@ namespace KP2faChecker.Forms
     {
         private List<KP2faC_Website> listKP2faC_Website = new List<KP2faC_Website>();
         private IPluginHost m_host = null;
+        private bool bRetrievingJson = false;
+        private bool bSearching = false;
 
         public KP2faC_SearchForm(IPluginHost m_host)
         {
@@ -24,13 +27,31 @@ namespace KP2faChecker.Forms
             this.m_host = m_host;
         }
 
-        public void InitEx(Dictionary<string, List<KP2faC_Website>> dictKP2faC_WebsiteByUrl)
+        public async void InitExAsync()
         {
-            foreach (List<KP2faC_Website> tmpListKP2faC_Website in dictKP2faC_WebsiteByUrl.Values)
-            {
-                listKP2faC_Website = listKP2faC_Website.Union(tmpListKP2faC_Website).ToList();
-            }
             buildListView();
+            bRetrievingJson = true;
+            doSearchAsync();
+
+            startAnimation("Loading");
+            btn_Search.Enabled = false;
+            btn_Reload.Enabled = false;
+
+            KP2faC_FileloaderAsync fileloader = new KP2faC_FileloaderAsync(KP2faCheckerExt.getKP2faC_Config());
+            string json = await fileloader.GetJsonAsync();
+            stopAnimation();
+
+            if (!json.Equals("KP2faC API error"))
+            {
+                listKP2faC_Website = JsonConvert.DeserializeObject<List<KP2faC_Website>>(json);
+                doSearchAsync();
+            }
+            else
+            {
+                btn_Search.Enabled = true;
+                btn_Reload.Enabled = true;
+            }
+            bRetrievingJson = false;
         }
 
         private void buildListView()
@@ -38,7 +59,7 @@ namespace KP2faChecker.Forms
             lv_Websites.Clear();
             lv_Websites.Columns.Add("Name", 120);
             lv_Websites.Columns.Add("Is 2fa supported?", 330);
-            ListSorter lsListSorter = new ListSorter(1, SortOrder.Ascending, true, false);
+            ListSorter lsListSorter = new ListSorter(0, SortOrder.Ascending, true, false);
             lv_Websites.ListViewItemSorter = lsListSorter;
             if(m_host != null)
             {
@@ -46,39 +67,67 @@ namespace KP2faChecker.Forms
             }
         }
 
-        private void tb_SearchQuery_TextChanged(object sender, EventArgs e)
+        private async void doSearchAsync()
         {
-            doSearch();
-        }
+            int c = 0;
+            startAnimation("Searching");
+            bSearching = true;
+            btn_Search.Enabled = false;
+            btn_Reload.Enabled = false;
 
-        private void doSearch()
-        {
+            lv_Websites.BeginUpdate();
+            ListSorter ls = (ListSorter)lv_Websites.ListViewItemSorter;
+            lv_Websites.ListViewItemSorter = null;
+            lv_Websites.Items.Clear();
             if (listKP2faC_Website.Count > 0)
             {
-                lv_Websites.Items.Clear();
                 string sSearchQuery = tb_SearchQuery.Text;
-
-                foreach (KP2faC_Website website in listKP2faC_Website)
+                await Task.Run(() =>
                 {
-                    if (compareText(website.name, sSearchQuery) || compareText(website.url, sSearchQuery))
-                        addItemToListView(website);
-                    else if (website.alternatives != null)
+                    foreach (KP2faC_Website website in listKP2faC_Website)
                     {
-                        foreach (string domain in website.alternatives)
+                        if (string.IsNullOrWhiteSpace(sSearchQuery) || compareText(website.name, sSearchQuery) || compareText(website.url, sSearchQuery))
                         {
-                            if (compareText(domain, sSearchQuery))
+                            addWebsiteToListView(website);
+                            c++;
+                        }
+                        else if (website.alternatives != null)
+                        {
+                            foreach (string domain in website.alternatives)
                             {
-                                addItemToListView(website);
-                                break;
+                                if (compareText(domain, sSearchQuery))
+                                {
+                                    addWebsiteToListView(website);
+                                    c++;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
+                });
+            }
+            else if (bRetrievingJson)
+            {
+                ListViewItem lvi = lv_Websites.Items.Add("Loading websites...");
+                lvi.ImageIndex = (int)PwIcon.NetworkServer;
+                lvi.ToolTipText = "The plugin is currently downloading the json file from the server or reading it from your pc!";
+                lvi.Font = new Font(lvi.Font, FontStyle.Italic);
             }
             else
             {
                 ListViewItem lvi = lv_Websites.Items.Add("API Error!");
+                lvi.ImageIndex = (int)PwIcon.Warning;
+                lvi.ToolTipText = "There happend an error! Try to connect your pc to the internet and press Reload!";
             }
+
+            btn_Reload.Enabled = true;
+            btn_Search.Enabled = true;
+            bSearching = false;
+            lv_Websites.ListViewItemSorter = ls;
+            lv_Websites.Sort();
+            lv_Websites.EndUpdate();
+            stopAnimation();
+            setStateText("Found " + c + " entrie(s)!");
         }
 
         private bool compareText(string text1, string text2)
@@ -87,9 +136,9 @@ namespace KP2faChecker.Forms
             return false;
         }
 
-        private void addItemToListView(KP2faC_Website website)
+        private void addWebsiteToListView(KP2faC_Website website)
         {
-            ListViewItem lvi = lv_Websites.Items.Add(website.name);
+            ListViewItem lvi = new ListViewItem(website.name);
             if (website.is2faPosssible())
             {
                 lvi.BackColor = Color.LightGreen;
@@ -111,6 +160,7 @@ namespace KP2faChecker.Forms
                 lvi.ToolTipText = "Tell them to support 2fa:\n (Double click)";
             }
             lvi.Tag = website;
+            lv_Websites.Items.Add(lvi);
         }
 
         private void KP2faC_SearchForm_Load(object sender, EventArgs e)
@@ -121,7 +171,6 @@ namespace KP2faChecker.Forms
                 this.Top = m_host.MainWindow.Top + 20;
                 pictureBox1.Image = m_host.MainWindow.ClientIcons.Images[(int)PwIcon.Info];
             }
-            doSearch();
         }
 
         private void lv_Websites_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -205,9 +254,56 @@ namespace KP2faChecker.Forms
 
         private void btn_Reload_Click(object sender, EventArgs e)
         {
-            KP2faCheckerExt.init(true);
-            InitEx(KP2faCheckerExt.dictKP2faC_WebsiteByUrl);
-            doSearch();
+            if (!bSearching && !bRetrievingJson)
+                InitExAsync();
+        }
+
+        private void setStateText(string text)
+        {
+            lbl_State.Visible = true;
+            lbl_State.Text = text;
+        }
+
+        private string sStateText;
+
+        private void startAnimation(string text)
+        {
+            lbl_State.Visible = true;
+            lbl_State.Text = text;
+            sStateText = text;
+            t_Animation.Start();
+        }
+
+        private void stopAnimation()
+        {
+            lbl_State.Visible = false;
+            lbl_State.Text = "";
+            sStateText = null;
+            t_Animation.Stop();
+        }
+
+        private void t_Animation_Tick(object sender, EventArgs e)
+        {
+            string s = lbl_State.Text.Replace(sStateText, "");
+            if (s.Length == 0 || s.Length >= 3)
+                lbl_State.Text = sStateText + ".";
+            else if (s.Length == 1)
+                lbl_State.Text = sStateText + "..";
+            else
+                lbl_State.Text = sStateText + "...";
+        }
+
+        private void btn_Search_Click(object sender, EventArgs e)
+        {
+            if (!bSearching && !bRetrievingJson)
+                doSearchAsync();
+        }
+
+        private void tb_SearchQuery_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+                if (!bSearching && !bRetrievingJson)
+                    doSearchAsync();
         }
     }
 }

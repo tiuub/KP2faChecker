@@ -50,29 +50,62 @@ namespace KP2faChecker.Forms
                 r = "No Url set. A Url is needed to check for 2fa support";
             else
             {
-                if (KP2faCheckerExt.dictKP2faC_WebsiteByUrl.Count > 0)
+                if (KP2faCheckerExt.dictKp2fac_WebsiteByDomain.Count > 0)
                 {
                     string prettifiedUrl = KP2faCheckerExt.prettifyUrl(url, KP2faCheckerExt.prettifyMode.AllWithoutTld);
-                    if (KP2faCheckerExt.dictKP2faC_WebsiteByUrl.ContainsKey(KP2faCheckerExt.prettifyUrl(prettifiedUrl, KP2faCheckerExt.prettifyMode.tld)))
-                        foreach (KP2faC_Website website in KP2faCheckerExt.dictKP2faC_WebsiteByUrl[KP2faCheckerExt.prettifyUrl(prettifiedUrl, KP2faCheckerExt.prettifyMode.tld)])
-                        {
-                            bool breakFor = false;
-                            if (prettifiedUrl == KP2faCheckerExt.prettifyUrl(website.url, KP2faCheckerExt.prettifyMode.AllWithoutTld))
-                                breakFor = true;
+                    string[] domainArray = prettifiedUrl.Split('.').Reverse().ToArray();
 
-                            if (!breakFor)
-                                foreach (string alternativeDomainName in website.alternatives)
+                    var curDict = KP2faCheckerExt.dictKp2fac_WebsiteByDomain;
+                    for (int i = 0; i < domainArray.Length; i++)
+                    {
+                        if (curDict.ContainsKey(domainArray[i]))
+                        {
+                            if (curDict[domainArray[i]] is KP2faC_Website)
+                            {
+                                if (((KP2faC_Website)curDict[domainArray[i]]).is2faPosssible())
                                 {
-                                    if (prettifiedUrl == KP2faCheckerExt.prettifyUrl(alternativeDomainName, KP2faCheckerExt.prettifyMode.AllWithoutTld))
+                                    if (i == domainArray.Length - 1)
                                     {
-                                        breakFor = true;
-                                        break;
+                                        r = "Yes" + r;
+                                        bPossible = true;
+                                        pb_trafficlight.Image = Properties.Resources.trafficlight_green;
                                     }
                                 }
-
-                            if (breakFor)
+                                else
+                                {
+                                    r = "No" + r;
+                                    pb_trafficlight.Image = Properties.Resources.trafficlight_red;
+                                }
+                                curWebsite = (KP2faC_Website)curDict[domainArray[i]];
+                            }
+                            else
                             {
-                                if (website.tfa != null)
+                                curDict = (Dictionary<string, object>)curDict[domainArray[i]];
+                                if (i == domainArray.Length - 1)
+                                {
+                                    if (curDict.ContainsKey("*") && curDict["*"] is KP2faC_Website)
+                                    {
+                                        if (((KP2faC_Website)curDict["*"]).is2faPosssible())
+                                        {
+                                            r = "Yes" + r;
+                                            bPossible = true;
+                                            pb_trafficlight.Image = Properties.Resources.trafficlight_green;
+                                        }
+                                        else
+                                        {
+                                            r = "No" + r;
+                                            pb_trafficlight.Image = Properties.Resources.trafficlight_red;
+                                        }
+                                        curWebsite = (KP2faC_Website)curDict["*"];
+                                    }
+                                }
+                            }
+                        }
+                        else if (curDict.ContainsKey("*"))
+                        {
+                            if (curDict["*"] is KP2faC_Website)
+                            {
+                                if (((KP2faC_Website)curDict["*"]).is2faPosssible())
                                 {
                                     r = "Yes" + r;
                                     bPossible = true;
@@ -83,10 +116,11 @@ namespace KP2faChecker.Forms
                                     r = "No" + r;
                                     pb_trafficlight.Image = Properties.Resources.trafficlight_red;
                                 }
-                                curWebsite = website;
-                                break;
+                                curWebsite = (KP2faC_Website)curDict["*"];
                             }
+                            break;
                         }
+                    }
                 }
                 else
                 {
@@ -116,7 +150,7 @@ namespace KP2faChecker.Forms
             {
                 EvAppendEntryFieldString(rb, strItemSeperator, "This is wrong?", "Give a hint! https://toasted.top/kp2fac/");
                 rb.AppendLine();
-                EvAppendEntryFieldString(rb, strItemSeperator, "If they really not supporting 2FA, tell them to support 2FA!", " ");
+                EvAppendEntryFieldString(rb, strItemSeperator, "Tell them to support 2FA!", " ");
                 if (!String.IsNullOrEmpty(curWebsite.email_address))
                     EvAppendEntryFieldString(rb, strItemSeperator, "Email address", curWebsite.email_address);
                 if (!String.IsNullOrEmpty(curWebsite.facebook))
@@ -126,6 +160,7 @@ namespace KP2faChecker.Forms
             }
             else
             {
+                rb.AppendLine();
                 EvAppendEntryFieldString(rb, strItemSeperator, "Is 2fa supported?", "Give a hint! https://toasted.top/kp2fac/");
             }
 
