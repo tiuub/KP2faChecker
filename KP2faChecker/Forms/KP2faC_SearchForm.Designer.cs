@@ -179,6 +179,7 @@
             // 
             // lbl_State
             // 
+            this.lbl_State.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lbl_State.AutoSize = true;
             this.lbl_State.Location = new System.Drawing.Point(93, 247);
             this.lbl_State.Name = "lbl_State";

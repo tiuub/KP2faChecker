@@ -67,7 +67,7 @@ namespace KP2faChecker
             KP2faC_FileloaderAsync fileloader = new KP2faC_FileloaderAsync(m_config);
             string json = await fileloader.GetJsonAsync();
 
-            if (!json.Equals("KP2faC API error"))
+            if (!json.Equals("KP2faC API error") && !json.StartsWith("null"))
             {
                 List<KP2faC_Website> websites = JsonConvert.DeserializeObject<List<KP2faC_Website>>(json);
                 foreach (KP2faC_Website website in websites)

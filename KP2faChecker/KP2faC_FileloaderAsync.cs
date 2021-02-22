@@ -32,7 +32,11 @@ namespace KP2faChecker
             await Task.Delay(1000);
             if (mode == getJsonMode.Offline || (mode != getJsonMode.Online && await TestOfflineFileAsync()))
             {
-                return await GetOfflineJsonFileAsync();
+                string json = await GetOfflineJsonFileAsync();
+                if (json.StartsWith("null"))
+                    return await GetJsonAsync(getJsonMode.Online);
+                else
+                    return json;
             }
             else
             {
