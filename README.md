@@ -60,8 +60,8 @@ You can download the .plgx file [here](https://github.com/tiuub/KP2faChecker/rel
 
 ## Additional Information
 
-I have build my own API [here](https://toasted.top/kp2fac/api/v1/get/all.php), which receives its data from [twofactorauth.org](https://twofactorauth.org/). 
-To save resources and also because twofactorauth.org isnt changing its data that often, the plugin will only request every 2 days for new added websites. 
+I have build my own API [here](https://toasted.top/kp2fac/api/v1/get/all.php), which receives its data from [2fa.directory (formerly twofactorauth.org)](https://2fa.directory/). 
+To save resources and also because 2fa.directory isnt changing its data that often, the plugin will only request every 2 days for new added websites. 
 
 
 
