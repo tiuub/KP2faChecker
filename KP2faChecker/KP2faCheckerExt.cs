@@ -70,31 +70,60 @@ namespace KP2faChecker
             if (!json.Equals("KP2faC API error") && !json.StartsWith("null"))
             {
                 List<KP2faC_Website> websites = JsonConvert.DeserializeObject<List<KP2faC_Website>>(json);
-                foreach (KP2faC_Website website in websites)
+                foreach (KP2faC_Website website in websites.Where(w => w.alternatives != null))
                 {
-                    if (website.alternatives != null)
+                    foreach (string domain in website.alternatives)
                     {
-                        foreach (string domain in website.alternatives)
-                        {
-                            string domainName = prettifyUrl(website.url, prettifyMode.AllWithoutTld);
+                        string domainName = prettifyUrl(domain, prettifyMode.AllWithoutTld);
 
-                            string[] domainArray = domain.Split('.');
-                            domainArray = domainArray.Reverse().ToArray();
-                            var curDict = dictKp2fac_WebsiteByDomain;
-                            int i = 0;
-                            for (i = 0; i < domainArray.Length - 1; i++)
+                        string[] domainArray = domainName.Split('.');
+                        domainArray = domainArray.Reverse().ToArray();
+                        var curDict = dictKp2fac_WebsiteByDomain;
+                        int i = 0;
+                        for (i = 0; i < domainArray.Length - 1; i++)
+                        {
+                            if (!curDict.Keys.Contains(domainArray[i]))
                             {
-                                if (!curDict.Keys.Contains(domainArray[i]))
-                                {
-                                    curDict.Add(domainArray[i], new Dictionary<string, object>());
-                                }
-                                
-                                curDict = (Dictionary<string, object>)curDict[domainArray[i]];
+                                curDict.Add(domainArray[i], new Dictionary<string, object>());
                             }
-                            if (!curDict.ContainsKey(domainArray[i]))
-                                curDict.Add(domainArray[i], website);
+
+                            curDict = (Dictionary<string, object>)curDict[domainArray[i]];
+                        }
+                        if (!curDict.ContainsKey(domainArray[i]))
+                            curDict.Add(domainArray[i], website);
+                    }
+                }
+
+                foreach (KP2faC_Website website in websites.Where(w => w.alternatives == null))
+                {
+                    string domainName = prettifyUrl(website.url, prettifyMode.AllWithoutTld);
+
+                    string[] domainArray = domainName.Split('.');
+                    domainArray = domainArray.Reverse().ToArray();
+                    var curDict = dictKp2fac_WebsiteByDomain;
+                    int i = 0;
+                    for (i = 0; i < domainArray.Length - 1; i++)
+                    {
+                        if (!curDict.Keys.Contains(domainArray[i]))
+                        {
+                            curDict.Add(domainArray[i], new Dictionary<string, object>());
+                        }
+
+                        if (curDict[domainArray[i]] is KP2faC_Website)                        
+                        {
+                            // rearrange website into a child dictionary
+                            var tempWebsite = curDict[domainArray[i]];
+                            curDict[domainArray[i]] = new Dictionary<string, object>();
+                            curDict = (Dictionary<string, object>)curDict[domainArray[i]];
+                            curDict.Add("*", tempWebsite);
+                        }
+                        else
+                        {
+                            curDict = (Dictionary<string, object>)curDict[domainArray[i]];
                         }
                     }
+                    if (!curDict.ContainsKey(domainArray[i]))
+                        curDict.Add(domainArray[i], website);
                 }
             }
             else
